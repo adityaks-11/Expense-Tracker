@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e1e1e">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: white;
+            --border-color: #444;
+            --input-bg: #2d2d2d;
+            --input-text: white;
+            --button-bg: #4a4a4a;
+            --button-hover: #666;
+            --delete-color: #ff4d4d;
+            --table-header-bg: rgba(255, 255, 255, 0.05);
+            --table-row-hover: rgba(255, 255, 255, 0.02);
+            --border-radius: 12px;
+            --input-radius: 10px;
+        }
+
+        .light-mode {
+            --bg-color: #f5f5f5;
+            --container-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #ddd;
+            --input-bg: #ffffff;
+            --input-text: #333;
+            --button-bg: #e0e0e0;
+            --button-hover: #ccc;
+            --delete-color: #ff4d4d;
+            --table-header-bg: #f8f9fa;
+            --table-row-hover: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--container-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            color: var(--text-color);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2em;
+            font-weight: 600;
+        }
+
+        h3 {
+            margin: 1.5em 0 1em;
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--button-hover);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            width: 100%;
+        }
+
+        select, input, button {
+            padding: 12px 16px;
+            border-radius: var(--input-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            font-size: 0.95em;
+        }
+
+        input, select {
+            flex-grow: 1;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #646cff;
+            box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+        }
+
+        button {
+            cursor: pointer;
+            background-color: var(--button-bg);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-1px);
+        }
+
+        .info-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            background: var(--table-header-bg);
+            padding: 15px 20px;
+            border-radius: var(--input-radius);
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--input-radius);
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            font-weight: 500;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: var(--table-row-hover);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .trash-icon {
+            background: none;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+        }
+
+        .trash-icon:hover {
+            opacity: 1;
+            background-color: rgba(255, 77, 77, 0.1);
+            transform: scale(1.1);
+        }
+
+        .trash-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: var(--delete-color);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .empty-table-message {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+            background: var(--table-header-bg);
+        }
+
+        .light-mode .empty-table-message {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .delete-column {
+            width: 50px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 12px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .logo-container {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .input-row {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .info-display {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        #offline-status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--container-bg);
+            padding: 12px 24px;
+            border-radius: var(--input-radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        #offline-status.show {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                    <path d="M18 12v4"></path>
+                </svg>
+                <h1>Expense Tracker</h1>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+
+        <div class="input-group">
+            <div class="input-row" id="totalAmountRow">
+                <input type="number" id="totalAmount" placeholder="Enter Total Amount">
+                <button onclick="setTotalAmount()">Set Total</button>
+                <button id="resetTotal" onclick="resetTotalAmount()" class="hidden">Re-enter Amount</button>
+            </div>
+        </div>
+
+        <div class="info-display">
+            <p id="totalDisplay" class="hidden">Total Amount: <span id="totalValue">0</span></p>
+            <p>Available Balance: <span id="availableBalance">0</span></p>
+        </div>
+        
+        <div class="input-group">
+            <div class="input-row">
+                <input type="text" id="expenseName" placeholder="Expense Name">
+                <input type="number" id="expenseAmount" placeholder="Amount">
+            </div>
+            <div class="input-row">
+                <select id="expenseType" onchange="toggleUserDropdown()">
+                    <option value="group">Group Expense</option>
+                    <option value="personal">Personal Expense</option>
+                </select>
+                <select id="userDropdown" class="hidden">
+                    <option value="Chiku">Chiku</option>
+                    <option value="Pranab">Pranab</option>
+                    <option value="Bhawesh">Bhawesh</option>
+                    <option value="Rakesh">Rakesh</option>
+                </select>
+                <button onclick="addExpense()">Add Expense</button>
+            </div>
+        </div>
+        
+        <h3>Group Expenses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th class="delete-column"></th>
+                </tr>
+            </thead>
+            <tbody id="groupExpenses">
+                <tr class="empty-table-message" id="emptyGroupMessage">
+                    <td colspan="3">No group expenses yet</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Personal Expenses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th class="delete-column"></th>
+                </tr>
+            </thead>
+            <tbody id="personalExpenses">
+                <tr class="empty-table-message" id="emptyPersonalMessage">
+                    <td colspan="4">No personal expenses yet</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Total Spent Per Person</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Chiku</th>
+                    <th>Pranab</th>
+                    <th>Bhawesh</th>
+                    <th>Rakesh</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="chikuTotal">0</td>
+                    <td id="pranabTotal">0</td>
+                    <td id="bhaweshTotal">0</td>
+                    <td id="rakeshTotal">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="offline-status">
+        You are currently offline
+    </div>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // Check online/offline status
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        function updateOnlineStatus() {
+            const offlineStatus = document.getElementById('offline-status');
+            if (navigator.onLine) {
+                offlineStatus.classList.remove('show');
+            } else {
+                offlineStatus.classList.add('show');
+            }
+        }
+
+        let totalAmount = 0;
+        let availableBalance = 0;
+        let userTotals = { Chiku: 0, Pranab: 0, Bhawesh: 0, Rakesh: 0 };
+        let expenses = { group: [], personal: [] };
+        let expenseCounter = 0;
+
+        // Check local storage for saved data on page load
+        window.onload = function() {
+            loadFromLocalStorage();
+            updateOnlineStatus();
+            
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.querySelector('.theme-toggle').textContent = '☀️';
+            }
+        };
+
+        function saveToLocalStorage() {
+            localStorage.setItem('expenseData', JSON.stringify({
+                totalAmount,
+                availableBalance,
+                userTotals,
+                expenses,
+                expenseCounter
+            }));
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('expenseData');
+            
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                totalAmount = data.totalAmount;
+                availableBalance = data.availableBalance;
+                userTotals = data.userTotals;
+                expenses = data.expenses;
+                expenseCounter = data.expenseCounter || 0;
+                
+                // Update UI with saved data
+                if (totalAmount > 0) {
+                    document.getElementById('totalDisplay').classList.remove('hidden');
+                    document.getElementById('totalValue').innerText = totalAmount;
+                    document.getElementById('availableBalance').innerText = availableBalance;
+                    document.getElementById('totalAmount').classList.add('hidden');
+                    document.querySelector('button[onclick="setTotalAmount()"]').classList.add('hidden');
+                    document.getElementById('resetTotal').classList.remove('hidden');
+                }
+                
+                // Render saved expenses
+                renderExpenses();
+                updateTotals();
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeButton = document.querySelector('.theme-toggle');
+            
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                themeButton.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                themeButton.textContent = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function setTotalAmount() {
+            const input = document.getElementById('totalAmount');
+            if (!input.value || isNaN(parseFloat(input.value)) || parseFloat(input.value) <= 0) {
+                alert("Please enter a valid amount");
+                return;
+            }
+            
+            totalAmount = parseFloat(input.value);
+            availableBalance = totalAmount;
+            document.getElementById('totalDisplay').classList.remove('hidden');
+            document.getElementById('totalValue').innerText = totalAmount;
+            document.getElementById('availableBalance').innerText = availableBalance;
+            document.getElementById('totalAmount').classList.add('hidden');
+            document.querySelector('button[onclick="setTotalAmount()"]').classList.add('hidden');
+            document.getElementById('resetTotal').classList.remove('hidden');
+            
+            saveToLocalStorage();
+        }
+
+        function resetTotalAmount() {
+            if (!confirm("Are you sure you want to change the total amount? Your existing expenses will be preserved.")) {
+                return;
+            }
+            
+            // Store current expenses
+            const currentExpenses = { ...expenses };
+            const currentUserTotals = { ...userTotals };
+            
+            // Reset only the total amount
+            totalAmount = 0;
+            document.getElementById('totalAmount').classList.remove('hidden');
+            document.getElementById('totalAmount').value = "";
+            document.querySelector('button[onclick="setTotalAmount()"]').classList.remove('hidden');
+            document.getElementById('resetTotal').classList.add('hidden');
+            document.getElementById('totalDisplay').classList.add('hidden');
+            
+            // Recalculate available balance based on existing expenses
+            const totalSpent = [...currentExpenses.group, ...currentExpenses.personal]
+                .reduce((sum, exp) => sum + exp.amount, 0);
+            availableBalance = -totalSpent;
+            
+            document.getElementById('availableBalance').innerText = availableBalance;
+            
+            // Keep existing expenses
+            expenses = currentExpenses;
+            userTotals = currentUserTotals;
+            
+            renderExpenses();
+            updateTotals();
+            saveToLocalStorage();
+        }
+
+        function toggleUserDropdown() {
+            const type = document.getElementById('expenseType').value;
+            document.getElementById('userDropdown').classList.toggle('hidden', type !== 'personal');
+        }
+
+        function addExpense() {
+            const name = document.getElementById('expenseName').value.trim();
+            const amountInput = document.getElementById('expenseAmount').value;
+            const type = document.getElementById('expenseType').value;
+            
+            if (!name) {
+                alert("Please enter expense name");
+                return;
+            }
+            
+            if (!amountInput || isNaN(parseFloat(amountInput)) || parseFloat(amountInput) <= 0) {
+                alert("Please enter a valid amount");
+                return;
+            }
+            
+            const amount = parseFloat(amountInput);
+            
+            if (amount > availableBalance) {
+                alert("Expense amount exceeds available balance");
+                return;
+            }
+            
+            availableBalance -= amount;
+            
+            const id = expenseCounter++;
+            
+            if (type === 'group') {
+                expenses.group.push({ id, name, amount });
+                const splitAmount = amount / 4;
+                Object.keys(userTotals).forEach(user => userTotals[user] += splitAmount);
+            } else {
+                const user = document.getElementById('userDropdown').value;
+                expenses.personal.push({ id, user, name, amount });
+                userTotals[user] += amount;
+            }
+            
+            // Clear inputs
+            document.getElementById('expenseName').value = '';
+            document.getElementById('expenseAmount').value = '';
+            
+            renderExpenses();
+            updateTotals();
+            saveToLocalStorage();
+        }
+        
+        function deleteExpense(type, id) {
+            if (type === 'group') {
+                const expense = expenses.group.find(exp => exp.id === id);
+                if (expense) {
+                    const splitAmount = expense.amount / 4;
+                    Object.keys(userTotals).forEach(user => userTotals[user] -= splitAmount);
+                    availableBalance += expense.amount;
+                    expenses.group = expenses.group.filter(exp => exp.id !== id);
+                }
+            } else {
+                const expense = expenses.personal.find(exp => exp.id === id);
+                if (expense) {
+                    userTotals[expense.user] -= expense.amount;
+                    availableBalance += expense.amount;
+                    expenses.personal = expenses.personal.filter(exp => exp.id !== id);
+                }
+            }
+            
+            renderExpenses();
+            updateTotals();
+            saveToLocalStorage();
+        }
+        
+        function renderExpenses() {
+            const groupTbody = document.getElementById('groupExpenses');
+            const personalTbody = document.getElementById('personalExpenses');
+            
+            // Render group expenses
+            if (expenses.group.length === 0) {
+                groupTbody.innerHTML = `<tr class="empty-table-message" id="emptyGroupMessage">
+                    <td colspan="3">No group expenses yet</td>
+                </tr>`;
+            } else {
+                groupTbody.innerHTML = '';
+                expenses.group.forEach(expense => {
+                    groupTbody.innerHTML += `
+                    <tr>
+                        <td>${expense.name}</td>
+                        <td>${expense.amount.toFixed(2)}</td>
+                        <td class="delete-column">
+                            <button class="trash-icon" onclick="deleteExpense('group', ${expense.id})">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+            }
+            
+            // Render personal expenses
+            if (expenses.personal.length === 0) {
+                personalTbody.innerHTML = `<tr class="empty-table-message" id="emptyPersonalMessage">
+                    <td colspan="4">No personal expenses yet</td>
+                </tr>`;
+            } else {
+                personalTbody.innerHTML = '';
+                expenses.personal.forEach(expense => {
+                    personalTbody.innerHTML += `
+                    <tr>
+                        <td>${expense.user}</td>
+                        <td>${expense.name}</td>
+                        <td>${expense.amount.toFixed(2)}</td>
+                        <td class="delete-column">
+                            <button class="trash-icon" onclick="deleteExpense('personal', ${expense.id})">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+            }
+            
+            // Update available balance
+            document.getElementById('availableBalance').innerText = availableBalance.toFixed(2);
+        }
+        
+        function updateTotals() {
+            Object.keys(userTotals).forEach(user => {
+                document.getElementById(user.toLowerCase() + 'Total').innerText = userTotals[user].toFixed(2);
+            });
+        }
+    </script>
+</div>
+</body>
+</html>
